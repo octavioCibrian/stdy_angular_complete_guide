@@ -1,4 +1,5 @@
 import { Component, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
+import { toObservable } from '@angular/core/rxjs-interop';
 import { interval, map } from 'rxjs';
 
 @Component({
@@ -11,8 +12,8 @@ export class AppComponent implements OnInit{
   clickCount = signal(0);
 
   constructor() {
-    effect(() => {
-      console.log(`click button ${this.clickCount()} times `);
+    toObservable(this.clickCount).subscribe(numClicks=> {
+      console.log(numClicks);
 
     })
   }
