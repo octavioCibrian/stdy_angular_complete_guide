@@ -1,5 +1,5 @@
 import { Component, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
-import { toObservable } from '@angular/core/rxjs-interop';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { interval, map } from 'rxjs';
 
 @Component({
@@ -10,12 +10,15 @@ import { interval, map } from 'rxjs';
 export class AppComponent implements OnInit{
   private destroRef = inject(DestroyRef);
   clickCount = signal(0);
-
+  intervalSignal = toSignal(interval(1000), { initialValue: 0});
+  //Obervables unlike signals doesn't have a initial value, if we see the template, it doesn't render anything at first,
+  //we can change that passing the second argumenet { initialValue: 0} that is not required
   constructor() {
-    toObservable(this.clickCount).subscribe(numClicks=> {
-      console.log(numClicks);
+    effect(()=> {
+      console.log('sasasas'+ this.intervalSignal());
 
     })
+
   }
   ngOnInit(): void {
     // //this is another way to pass an object to obtain more than next, like error or complete
