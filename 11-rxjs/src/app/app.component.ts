@@ -1,6 +1,6 @@
 import { Component, DestroyRef, effect, inject, OnInit, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { interval, map } from 'rxjs';
+import { interval, map, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-root',
@@ -13,11 +13,37 @@ export class AppComponent implements OnInit{
   intervalSignal = toSignal(interval(1000), { initialValue: 0});
   //Obervables unlike signals doesn't have a initial value, if we see the template, it doesn't render anything at first,
   //we can change that passing the second argumenet { initialValue: 0} that is not required
+  customIntervals$ = new Observable((subscriber)=> {
+    let cont = 0
+    const interval = setInterval(()=> {
+      subscriber.next(++cont);
+      if(cont >= 3) {
+        clearInterval(interval)
+        subscriber.complete()
+      }
+      // subscriber.error() We can emmit an error as well
+    }, 2000)
+  }); //
+
   constructor() {
     effect(()=> {
       console.log('sasasas'+ this.intervalSignal());
 
     })
+
+    this.customIntervals$.subscribe({
+      next: (val)=> {
+        console.log(val)
+      },
+      complete: () => {
+        console.log('finished')
+      },
+      error: (err)=> {
+        console.log(err);
+
+      }
+
+  });
 
   }
   ngOnInit(): void {
