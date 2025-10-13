@@ -1,0 +1,9 @@
+
+
+<div class="list-container">
+  <div *ngFor="let user of users$ | async" class="wooden-plank">
+    <span>{{ user.nombre }}</span>
+    <span>{{ user.edad }}</span>
+  </div>
+</div>
+
