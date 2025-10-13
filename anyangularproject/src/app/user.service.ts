@@ -10,8 +10,12 @@ export interface User {
   providedIn: 'root'
 })
 export class UserService {
-  public users$ = new BehaviorSubject<User[]>([]);
-  // users$ = this.users$.asObservable();
+  public users$ = new BehaviorSubject<User[]>([
+    { nombre: 'Octavio', edad: 30 },
+    { nombre: 'Juan', edad: 25 },
+    { nombre: 'Pedro', edad: 35 },
+  ]);
+
 
   addUser(user: User) {
     const users = this.users$.getValue();
