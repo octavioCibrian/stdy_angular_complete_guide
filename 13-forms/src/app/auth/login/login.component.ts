@@ -1,53 +1,87 @@
-import { afterNextRender, Component, DestroyRef, inject, viewChild } from '@angular/core';
-import { FormsModule, NgForm } from '@angular/forms';
-import { debounceTime } from 'rxjs';
+import { Component, DestroyRef, inject, OnInit } from '@angular/core';
+import { AbstractControl, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { debounceTime, of } from 'rxjs';
+
+
+function emailIsUnique(control: AbstractControl) {
+  if(control.value !== 'test@example.com') {
+    return of(null)
+  }
+  return of({emailIsUnique: true})
+}
 
 @Component({
   selector: 'app-login',
-  imports: [FormsModule],
   standalone: true,
+  imports: [ReactiveFormsModule],
   templateUrl: './login.component.html',
   styleUrl: './login.component.css',
 })
-export class LoginComponent {
-  private form = viewChild.required<NgForm>('form'); //NOTE: This is a signal
-  private destroyRef = inject(DestroyRef);
+export class LoginComponent implements OnInit{
+  private destroRef = inject(DestroyRef);
+  form = new FormGroup({
+    email: new FormControl('', {
+      validators: [ Validators.email, Validators.required],
+    }),
+    password: new FormControl('', {
+      validators: [ Validators.required, Validators.minLength(6), this.mustContainQuestionMark()]
+    })
+  })
 
-  constructor() {
-    afterNextRender(() => {
-      const savedForm = window.localStorage.getItem('saved-login-form');
-      if(savedForm) {
-        console.log(savedForm);
+  //NOTE: Ya podemos hacer uso del form en ngOnInit desde un inicio por que ya lo inicializamos de esta forma
+  ngOnInit(): void {
+    const savedForm = window.localStorage.getItem('saved-logion-form');
+    if(savedForm) {
+      const form = JSON.parse(savedForm);
+      this.form.patchValue({
+        email: form.email
+      })
 
-        const loadedFormData = JSON.parse(savedForm).email;
-        setTimeout(()=> {
-          this.form().controls['email'].setValue(loadedFormData);
-        },1)
-
-      }
-
-      const subscription = this.form().valueChanges?.
-      pipe(debounceTime(500)).subscribe((value) => {
-        window.localStorage.setItem('saved-login-form',
-           JSON.stringify(value));
-        console.log(value);
-      });
-
-      this.destroyRef.onDestroy(() => {
-        subscription?.unsubscribe();
-      });
-    });
-  }
-
-  onSubmit(formData: NgForm) {
-    if (!formData.valid) {
-      return;
     }
 
-    const enteredEmail = formData.form.value.email;
-    const enteredPassword = formData.form.value.password;
-    console.log(enteredEmail, enteredPassword);
-    formData.form.reset();
-    // NOTE: tienes metodos en el form como markAsTocuhed, o removeValidators
+    const subscription = this.form.valueChanges
+    .pipe(debounceTime(200))
+    .subscribe({
+      next: (value) => {
+        window.localStorage.setItem('saved-logion-form', JSON.stringify(value))
+      }
+    })
+
+    this.destroRef.onDestroy(() => {
+      subscription.unsubscribe();
+    })
   }
+
+  onSubmit() {
+    const enteredEmail = this.form.value.email;
+    const enteredPassword = this.form.value.password;
+    console.log(enteredEmail, enteredPassword);
+
+  }
+
+  mustContainQuestionMark() {
+    return (control: AbstractControl) => {
+      if(control.value.includes('?')){
+          return null
+        }
+
+        return { doesNotContainQuestionMark: true}
+    }
+
+}
+
+
+  get emailInsInvalid() {
+    return  this.form.controls.email.touched &&
+        this.form.controls.email.dirty &&
+        this.form.controls.email.invalid;
+  }
+
+  get passwordInsInvalid() {
+    return this.form.controls.password.touched &&
+        this.form.controls.password.dirty &&
+        this.form.controls.password.invalid;
+  }
+
+
 }
