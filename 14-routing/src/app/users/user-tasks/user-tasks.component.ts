@@ -1,6 +1,6 @@
 import { Component, computed, inject, input, OnChanges, OnInit } from '@angular/core';
 import { UsersService } from '../users.service';
-import { ActivatedRoute, RouterOutlet, RouterLink, ResolveFn, RouterStateSnapshot, ActivatedRouteSnapshot } from '@angular/router';
+import { ActivatedRoute, RouterOutlet, RouterLink, ResolveFn, RouterStateSnapshot, ActivatedRouteSnapshot, RouterState } from '@angular/router';
 import { User } from '../user/user.model';
 
 @Component({
@@ -26,4 +26,8 @@ export const resolveUserName:ResolveFn<string> = (activatedRoute: ActivatedRoute
   const userName = userService.users.find(user => user.id === activatedRoute.paramMap.get('userId'))
   ?.name || '';
   return userName;
+}
+
+export const resolveTitle: ResolveFn<string> = (activateRoute: ActivatedRouteSnapshot, routerState: RouterStateSnapshot) => {
+  return resolveUserName(activateRoute, routerState)+ "'s tasks"
 }
