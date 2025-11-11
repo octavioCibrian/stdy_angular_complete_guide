@@ -9,9 +9,16 @@ import { User } from '../user/user.model';
   imports: [RouterOutlet, RouterLink],
   templateUrl: './user-tasks.component.html', styleUrl: './user-tasks.component.css',
 })
-export class UserTasksComponent {
+export class UserTasksComponent implements OnInit{
   userName = input.required<User>();
+  private activateRoute = inject(ActivatedRoute);
 
+  ngOnInit(): void {
+    this.activateRoute.data.subscribe(data=> {
+      console.log(data);
+
+    })
+  }
 }
 
 export const resolveUserName:ResolveFn<string> = (activatedRoute: ActivatedRouteSnapshot, routerState: RouterStateSnapshot) => {
